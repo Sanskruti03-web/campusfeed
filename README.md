@@ -4,6 +4,7 @@ A platform for NIT Rourkela students to share events, announcements, and connect
 
 ## 🚀 Features
 
+
 ### Version 1 (Current - MVP)
 - ✅ **Domain-Restricted Auth**: Only @nitrkl.ac.in emails can register
 - ✅ **Email Verification**: Token-based email verification (dev mode shows token)
