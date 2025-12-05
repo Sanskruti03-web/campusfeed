@@ -2,6 +2,7 @@
 
 A platform for NIT Rourkela students to share events, announcements, and connect with the campus community. Features domain-restricted authentication, markdown posts with media attachments, nested Reddit-style comments, and reactions.
 
+
 ## 🚀 Features
 
 
