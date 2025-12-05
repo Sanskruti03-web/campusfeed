@@ -1,0 +1,16 @@
+flask
+flask-login
+flask-sqlalchemy
+alembic
+python-dotenv
+flask-limiter
+flask-cors
+bleach
+itsdangerous
+pillow
+gunicorn
+pytest
+pytest-flask
+factory-boy
+coverage
+pymysql
