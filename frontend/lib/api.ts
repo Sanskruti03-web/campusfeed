@@ -31,7 +31,7 @@ export const authAPI = {
 // Posts API
 export const postsAPI = {
   list: (category?: string, search?: string, sort?: string) =>
-    api.get('/posts', { params: { category, search, sort } }),
+    api.get('/posts', { params: { category, search, sort, limit: 200 } }),
   
   get: (id: number) =>
     api.get(`/posts/${id}`),

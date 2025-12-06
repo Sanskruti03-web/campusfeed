@@ -112,6 +112,7 @@ export default function Home() {
         sort
       );
       const allPostsData = response.data.posts || [];
+      console.log(`📊 Fetched ${allPostsData.length} posts total`);
       setAllPosts(allPostsData);
       // Load first batch of posts
       setDisplayPosts(allPostsData.slice(0, POSTS_PER_PAGE));
@@ -141,11 +142,13 @@ export default function Home() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
-          loadMorePosts();
-        }
+        entries.forEach(entry => {
+          if (entry.isIntersecting && hasMore && !loadingMore && !loading && displayPosts.length > 0) {
+            loadMorePosts();
+          }
+        });
       },
-      { threshold: 0.1 }
+      { threshold: 0.01, rootMargin: '100px' }
     );
 
     const currentTarget = observerTarget.current;
@@ -158,7 +161,7 @@ export default function Home() {
         observer.unobserve(currentTarget);
       }
     };
-  }, [hasMore, loadingMore, loading, loadMorePosts]);
+  }, [hasMore, loadingMore, loading, loadMorePosts, displayPosts.length]);
 
   useEffect(() => {
     // Always reflect URL -> state, including when category is cleared (All)
