@@ -6,7 +6,7 @@
 
 :root {
   --color-bg-deep: #f7f6fa;
-    --color-surface: #ffffff79;
+    --color-surface: #ffffff;
     --color-shadow: #ffffff79;
     --color-text: #000;
     --color-surface-soft: #f7f6fa;
@@ -29,26 +29,20 @@
   --font-mono: var(--font-geist-mono);
 } */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg-deep: #09090581;
-    --color-surface: #0000007c;
-    --color-shadow: #0000007c;
-    --color-text: #fff;
-    --color-surface-soft: #090905;
-    --color-border: #0b0b0a;
-    --color-highlight: #22946e;
-    --color-highlight-alt: #273100;
+/* Dark theme - manual class override, NOT system preference */
+html.dark {
+  --color-bg-deep: #09090581;
+  --color-surface: #000000d1;
+  --color-shadow: #0000007c;
+  --color-text: #fff;
+  --color-surface-soft: #090905;
+  --color-border: #0b0b0a;
+  --color-highlight: #22946e;
+  --color-highlight-alt: #273100;
   --gradient-accent: linear-gradient(135deg, #9ba36e 0%, #858e5c 55%, #485600 100%);
-  
-    /* --gradient-accent: #b9b9bc; */
-     --gradient-focus: #fff;
-  /* --gradient-focus: linear-gradient(135deg, #a3b935 0%, #c0ca99 60%, #f9fadd 100%); */
-  
-    
-    --background: var(--color-bg-deep);
-    --foreground: var(--color-text);
-  }
+  --gradient-focus: #fff;
+  --background: var(--color-bg-deep);
+  --foreground: var(--color-text);
 }
 
 body {
@@ -67,7 +61,7 @@ body {
 .logo-frame, 
 .avatar-frame, 
 .search-frame, 
-.bell-frame {
+.bell-frame{
   /* background: var(--color-bg-deep); */
   box-shadow: -1px -1px 2px var(--color-shadow), 1px 1px 2px var(--color-surface);
   border-radius: 1.4rem;
@@ -139,7 +133,7 @@ body {
 .logo-frame:hover .logo-inner,
 .avatar-frame:hover .avatar-inner,
 .search-frame:hover .search-inner,
-.bell-frame:hover .bell-inner {
+.bell-frame:hover .bell-inner, .category-pill {
   transform: translateY(-4px);
   box-shadow: inset 3px 3px 6px #352f5a80, inset -3px -3px 6px #c8beff66;
 }
@@ -246,13 +240,13 @@ body {
   border-radius: 0.9rem;
   padding: 0.6rem 1.1rem;
   font-weight: 600;
-  box-shadow: 6px 6px 14px var(--color-shadow), -6px -6px 14px var(--color-surface);
+  box-shadow: inset 1px 1px 2px #352f5a8c, inset -1px -1px 2px #a896ff59;
   transition: box-shadow 0.35s, transform 0.25s;
 }
 
 .neo-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 4px 4px 10px var(--color-shadow), -4px -4px 10px var(--color-surface-soft);
+  box-shadow: inset 3px 3px 6px #352f5a80, inset -3px -3px 6px #c8beff66;
 }
 
 .neo-btn:active {
@@ -300,14 +294,14 @@ body {
   padding: 0.32rem 0.7rem;
   border-radius: 0.75rem;
   border: 1px solid var(--color-border);
-  box-shadow: 3px 3px 6px var(--color-shadow), -3px -3px 6px var(--color-surface);
-  transition: box-shadow 0.35s, transform 0.3s;
+  /* box-shadow: inset 1px 1px 2px #352f5a8c, inset -1px -1px 2px #a896ff59; */
+  /* transition: box-shadow 0.35s, transform 0.3s; */
   position: relative;
 }
 
 .category-pill:hover {
   transform: translateY(-2px);
-  box-shadow: 2px 2px 4px var(--color-shadow), -2px -2px 4px var(--color-surface-soft);
+  box-shadow: -1px -1px 2px var(--color-shadow), 1px 1px 2px var(--color-surface);
 }
 
 .gradient-text-primary {
@@ -359,4 +353,6 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+
 

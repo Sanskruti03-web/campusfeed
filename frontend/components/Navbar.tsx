@@ -1,18 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import NotificationDropdown from './NotificationDropdown';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [search, setSearch] = useState(searchParams.get('q') || '');
   const [isTyping, setIsTyping] = useState(false);
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+  const avatarMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Sync search state with URL params only when not typing
   useEffect(() => {
@@ -20,6 +24,17 @@ export default function Navbar() {
       setSearch(searchParams.get('q') || '');
     }
   }, [searchParams, isTyping]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) {
+        setShowAvatarMenu(false);
+      }
+    };
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -84,7 +99,6 @@ export default function Navbar() {
                 <path d="m21 21-4.35-4.35" />
               </svg>
               <input
-                // style={}
                 style={{ paddingLeft: 50 }}
                 type="search"
                 placeholder="Search posts..."
@@ -98,54 +112,116 @@ export default function Navbar() {
             </form>
           </div>
         </div>
-        {/* <div className="search-frame sm:w-40 mr-10">
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="search-inner neo-input w-full"
-            >
-              <option value="newest">Newest First</option>
-              <option value="popular">Most Popular</option>
-            </select>
-          </div> */}
-        {/* <div className="mb-6 flex flex-col sm:flex-row gap-4">
-          <div className="search-frame flex-1">
-            <input
-              type="text"
-              placeholder="Search posts..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="search-inner neo-input w-full"
-            />
-          </div>
-          
-        </div> */}
-        
 
         <div className="flex items-center gap-3">
-          {/* {user && <NotificationDropdown />} */}
-          <div className="relative group">
-            <div className="avatar-frame w-14 h-14 rounded-full">
+          {/* Avatar with Dropdown Menu */}
+          <div className="relative" ref={avatarMenuRef}>
+            <button
+              type="button"
+              onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+              className="avatar-frame w-14 h-14 rounded-full hover:scale-105 transition-transform"
+              aria-label="Account menu"
+            >
               {user ? (
-                <button
-                  type="button"
-                  onClick={() => router.push(`/users/${user.id}`)}
-                  className="avatar-inner inline-flex items-center justify-center w-full h-full rounded-full text-white text-lg font-bold transition-all hover:scale-105 hover:shadow-xl"
-                  aria-label="Account"
-                >
+                <div className="avatar-inner inline-flex items-center justify-center w-full h-full rounded-full text-white text-lg font-bold">
                   {user.name?.charAt(0).toUpperCase() || 'U'}
-                </button>
+                </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => router.push('/auth/login')}
-                  className="avatar-inner inline-flex items-center justify-center w-full h-full rounded-full text-white text-lg font-bold transition-all hover:scale-105 hover:shadow-xl"
-                  aria-label="Login"
-                >
+                <div className="avatar-inner inline-flex items-center justify-center w-full h-full rounded-full text-white text-lg font-bold">
                   ?
-                </button>
+                </div>
               )}
-            </div>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showAvatarMenu && user && (
+              <div className="absolute right-0 top-16 w-48 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg overflow-hidden z-50">
+                <div className="p-4 border-b border-[var(--color-border)]">
+                  <p className="text-sm font-semibold text-[var(--color-text)]">{user.name}</p>
+                  <p className="text-xs text-[var(--color-text)]/60">{user.email}</p>
+                </div>
+
+                <div className="p-2 space-y-1">
+                  {/* Profile */}
+                  <button
+                    onClick={() => {
+                      router.push(`/users/${user.id}`);
+                      setShowAvatarMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-lg text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-soft)] transition flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                    Profile
+                  </button>
+
+                  {/* Theme Toggle */}
+                  <button
+                    onClick={() => {
+                      toggleTheme();
+                      setShowAvatarMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-lg text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-soft)] transition flex items-center gap-2"
+                  >
+                    {theme === 'light' ? (
+                      <>
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                        </svg>
+                        Dark Mode
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <circle cx="12" cy="12" r="5" />
+                          <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" strokeWidth="2" />
+                          <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" strokeWidth="2" />
+                          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" strokeWidth="2" />
+                          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" strokeWidth="2" />
+                          <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" strokeWidth="2" />
+                          <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" strokeWidth="2" />
+                          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" strokeWidth="2" />
+                          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" strokeWidth="2" />
+                        </svg>
+                        Light Mode
+                      </>
+                    )}
+                  </button>
+
+                  {/* Logout */}
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setShowAvatarMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-lg text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950 transition flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" />
+                    </svg>
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Login prompt when not logged in */}
+            {showAvatarMenu && !user && (
+              <div className="absolute right-0 top-16 w-48 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg overflow-hidden z-50">
+                <div className="p-4">
+                  <button
+                    onClick={() => {
+                      router.push('/auth/login');
+                      setShowAvatarMenu(false);
+                    }}
+                    className="w-full px-4 py-2 rounded-lg text-sm font-semibold bg-[var(--color-highlight)] text-white hover:opacity-90 transition"
+                  >
+                    Login
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
