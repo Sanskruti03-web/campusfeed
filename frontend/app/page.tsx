@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { postsAPI } from '@/lib/api';
 import CategoryFilter from '@/components/CategoryFilter';
@@ -20,6 +20,8 @@ interface Post {
   user_id: number;
   user_name: string;
 }
+
+const POSTS_PER_PAGE = 20;
 
 // Backgrounds and copy for each category hero
 const CATEGORY_HERO: Record<string, { image: string; title: string; subtitle: string }> = {
@@ -87,11 +89,15 @@ const CATEGORY_HERO: Record<string, { image: string; title: string; subtitle: st
 
 export default function Home() {
   const searchParams = useSearchParams();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [displayPosts, setDisplayPosts] = useState<Post[]>([]);
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [sort, setSort] = useState('newest');
   const [error, setError] = useState('');
+  const [hasMore, setHasMore] = useState(true);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   // Get search from URL params (set by Navbar)
   const search = searchParams.get('q') || '';
@@ -105,7 +111,11 @@ export default function Home() {
         search || undefined,
         sort
       );
-      setPosts(response.data.posts);
+      const allPostsData = response.data.posts || [];
+      setAllPosts(allPostsData);
+      // Load first batch of posts
+      setDisplayPosts(allPostsData.slice(0, POSTS_PER_PAGE));
+      setHasMore(allPostsData.length > POSTS_PER_PAGE);
     } catch (err: any) {
       setError('Failed to load posts');
       console.error(err);
@@ -113,6 +123,42 @@ export default function Home() {
       setLoading(false);
     }
   }, [category, search, sort]);
+
+  const loadMorePosts = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    setTimeout(() => {
+      const currentLength = displayPosts.length;
+      const nextBatch = allPosts.slice(currentLength, currentLength + POSTS_PER_PAGE);
+      setDisplayPosts(prev => [...prev, ...nextBatch]);
+      setHasMore(currentLength + POSTS_PER_PAGE < allPosts.length);
+      setLoadingMore(false);
+    }, 300);
+  }, [displayPosts.length, allPosts, loadingMore, hasMore]);
+
+  // Intersection Observer for lazy loading
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          loadMorePosts();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, loadingMore, loading, loadMorePosts]);
 
   useEffect(() => {
     // Always reflect URL -> state, including when category is cleared (All)
@@ -213,7 +259,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-        ) : posts.length === 0 ? (
+        ) : displayPosts.length === 0 ? (
           <div className="card-frame text-center py-12">
             <div className="card-inner">
               <p className="text-muted text-lg">
@@ -222,17 +268,36 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
-            {posts.map((post, idx) => (
-              <div 
-                key={post.id} 
-                className="mb-5 break-inside-avoid masonry-item-enter"
-                style={{ animationDelay: `${(idx % 12) * 35}ms` }}
-              >
-                <PostCard post={post} />
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+              {displayPosts.map((post, idx) => (
+                <div 
+                  key={post.id} 
+                  className="mb-5 break-inside-avoid masonry-item-enter"
+                  style={{ animationDelay: `${(idx % 12) * 35}ms` }}
+                >
+                  <PostCard post={post} />
+                </div>
+              ))}
+            </div>
+
+            {/* Lazy load trigger */}
+            <div ref={observerTarget} className="w-full py-8 flex justify-center">
+              {loadingMore && (
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-[var(--color-highlight)] rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-[var(--color-highlight)] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-[var(--color-highlight)] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              )}
+              {hasMore && !loadingMore && !loading && displayPosts.length > 0 && (
+                <p className="text-[var(--color-text)]/60 text-sm">Scroll to load more posts...</p>
+              )}
+              {!hasMore && displayPosts.length > 0 && (
+                <p className="text-[var(--color-text)]/60 text-sm">No more posts to load</p>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
