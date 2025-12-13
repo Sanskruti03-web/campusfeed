@@ -5,6 +5,7 @@ alembic
 python-dotenv
 flask-limiter
 flask-cors
+flask-socketio
 bleach
 itsdangerous
 pillow

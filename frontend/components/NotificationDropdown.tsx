@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { notificationsAPI } from '@/lib/api';
+import { getSocket } from '@/lib/socket';
 
 interface Notification {
   id: number;
@@ -44,7 +45,30 @@ export default function NotificationDropdown() {
     
     // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+    const socket = getSocket();
+    const handleNew = (notif: any) => {
+      setNotifications(prev => [
+        {
+          id: notif.id,
+          type: notif.type,
+          content: notif.content,
+          post_id: notif.post_id,
+          comment_id: notif.comment_id,
+          actor_name: notif.actor_name || 'Someone',
+          actor_id: notif.actor_id,
+          is_read: notif.is_read ?? false,
+          created_at: notif.created_at,
+        },
+        ...prev,
+      ].slice(0, 50));
+      setUnreadCount(prev => prev + 1);
+    };
+    socket.on('notification:new', handleNew);
+
+    return () => {
+      clearInterval(interval);
+      socket.off('notification:new', handleNew);
+    };
   }, []);
 
   const handleMarkAsRead = async (id: number) => {

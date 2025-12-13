@@ -114,3 +114,11 @@ export const notificationsAPI = {
   getUnreadCount: () =>
     api.get('/notifications/unread-count'),
 };
+
+// Messages API
+export const messagesAPI = {
+  threads: () => api.get('/messages/threads'),
+  conversation: (userId: number) => api.get(`/messages/conversation/${userId}`),
+  send: (data: { recipient_id: number; content: string }) => api.post('/messages', data),
+  markRead: (id: number) => api.post(`/messages/${id}/read`),
+};

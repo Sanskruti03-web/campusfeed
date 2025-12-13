@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import func
-from ..extensions import db, limiter
+from ..extensions import db, limiter, socketio
 from ..models.reaction import Reaction
 from ..models.post import Post
 from ..models.comment import Comment
@@ -54,6 +54,22 @@ def add_reaction():
                     actor_id=current_user.id,
                 )
                 db.session.add(notification)
+                db.session.commit()
+                socketio.emit(
+                    "notification:new",
+                    {
+                        "id": notification.id,
+                        "type": notification.type,
+                        "content": notification.content,
+                        "post_id": notification.post_id,
+                        "comment_id": notification.comment_id,
+                        "actor_id": notification.actor_id,
+                        "actor_name": current_user.name,
+                        "created_at": notification.created_at.isoformat(),
+                        "is_read": notification.is_read,
+                    },
+                    room=f"user_{notification.user_id}",
+                )
         elif comment_id:
             comment = db.session.get(Comment, comment_id)
             if comment and comment.user_id != current_user.id:
@@ -66,6 +82,22 @@ def add_reaction():
                     actor_id=current_user.id,
                 )
                 db.session.add(notification)
+                db.session.commit()
+                socketio.emit(
+                    "notification:new",
+                    {
+                        "id": notification.id,
+                        "type": notification.type,
+                        "content": notification.content,
+                        "post_id": notification.post_id,
+                        "comment_id": notification.comment_id,
+                        "actor_id": notification.actor_id,
+                        "actor_name": current_user.name,
+                        "created_at": notification.created_at.isoformat(),
+                        "is_read": notification.is_read,
+                    },
+                    room=f"user_{notification.user_id}",
+                )
         
         db.session.commit()
     except Exception:

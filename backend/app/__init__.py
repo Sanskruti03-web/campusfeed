@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from .config import Config
-from .extensions import db, login_manager, limiter
+from .extensions import db, login_manager, limiter, socketio
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlite3 import Connection as SQLite3Connection
@@ -22,6 +22,7 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     limiter.init_app(app)
+    socketio.init_app(app)
 
     # CORS configuration for frontend on localhost:3000
     CORS(
@@ -38,6 +39,7 @@ def create_app():
     from .routes.media import media_bp
     from .routes.users import users_bp
     from .routes.notifications import notifications_bp
+    from .routes.messages import messages_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(posts_bp, url_prefix="/posts")
@@ -46,6 +48,11 @@ def create_app():
     app.register_blueprint(media_bp, url_prefix="/media")
     app.register_blueprint(users_bp, url_prefix="/users")
     app.register_blueprint(notifications_bp, url_prefix="/notifications")
+    app.register_blueprint(messages_bp, url_prefix="/messages")
+
+    # Register socket event handlers
+    from .socket_events import register_socket_events
+    register_socket_events(socketio)
 
     @app.get("/healthz")
     def healthz():

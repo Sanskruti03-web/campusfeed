@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useRef, useState, useEffect } from 'react';
+import MessageDrawer from './MessageDrawer';
 
 function NavIcon({ label, href, svg, active }: { label: string; href: string; svg: React.ReactNode; active?: boolean }) {
   return (
@@ -198,29 +199,7 @@ export default function Sidebar() {
           </button>
         </div>
         {showMessages && (
-          <div className="absolute left-20 top-0 z-50 w-[30rem] max-h-[70vh] overflow-auto rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)] p-5">
-            <h3 className="text-lg font-semibold mb-2 text-[var(--color-text)]">Messages</h3>
-            <input type="search" placeholder="Search users" className="neo-input w-full text-sm placeholder-[var(--color-text)]/50" />
-            <div className="mt-3">
-              <button className="w-full text-left px-3 py-2 rounded-xl text-[var(--color-text)] text-sm hover:bg-[var(--color-surface-soft)]/60 transition">
-                Create group
-              </button>
-            </div>
-            <div className="mt-2 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[var(--color-text)]">test1</span>
-                <button className="neo-btn text-xs px-3 py-1">Message</button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[var(--color-text)]">test2</span>
-                <button className="neo-btn text-xs px-3 py-1">Message</button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[var(--color-text)]">test3</span>
-                <button className="neo-btn text-xs px-3 py-1">Message</button>
-              </div>
-            </div>
-          </div>
+          <MessageDrawer onClose={() => setShowMessages(false)} />
         )}
       </div>
 
