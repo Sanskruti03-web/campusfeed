@@ -43,13 +43,133 @@ export default function MessageDrawer({ onClose }: { onClose: () => void }) {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messagesVisible, setMessagesVisible] = useState(true);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const [chatPos, setChatPos] = useState<{ top: number; left: number } | null>(null);
+  const dragState = useRef<{ startX: number; startY: number; origTop: number; origLeft: number; dragging: boolean }>({ startX: 0, startY: 0, origTop: 0, origLeft: 0, dragging: false });
+
+  // Initialize chat panel position near the right edge when opened
+  useEffect(() => {
+    if (!selectedUser) return;
+    const init = () => {
+      const panel = chatRef.current;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const w = panel?.offsetWidth || 420;
+      const h = panel?.offsetHeight || Math.min(0.7 * vh, 600);
+      const margin = 16; // 1rem
+      const top = Math.max(80, margin); // ~5rem from top by default
+      const left = Math.max(margin, vw - w - margin);
+      setChatPos({ top, left });
+    };
+    // Defer to next tick to ensure DOM measured
+    setTimeout(init, 0);
+  }, [selectedUser]);
+
+  // Keep the panel within viewport on resize
+  useEffect(() => {
+    const onResize = () => {
+      setChatPos((pos) => {
+        if (!pos) return pos;
+        const panel = chatRef.current;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const w = panel?.offsetWidth || 420;
+        const h = panel?.offsetHeight || 500;
+        const left = Math.min(Math.max(8, pos.left), Math.max(8, vw - w - 8));
+        const top = Math.min(Math.max(8, pos.top), Math.max(8, vh - h - 8));
+        return { top, left };
+      });
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const beginDrag = (clientX: number, clientY: number) => {
+    if (!chatPos) return;
+    dragState.current = {
+      startX: clientX,
+      startY: clientY,
+      origTop: chatPos.top,
+      origLeft: chatPos.left,
+      dragging: true,
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', endDrag);
+  };
+
+  const onMouseDownHeader = (e: React.MouseEvent) => {
+    e.preventDefault();
+    beginDrag(e.clientX, e.clientY);
+  };
+
+  const onTouchStartHeader = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    if (!t) return;
+    beginDrag(t.clientX, t.clientY);
+  };
+
+  const onMouseMove = (e: MouseEvent) => {
+    if (!dragState.current.dragging) return;
+    moveTo(e.clientX, e.clientY);
+  };
+
+  const onTouchMove = (e: TouchEvent) => {
+    if (!dragState.current.dragging) return;
+    const t = e.touches[0];
+    if (!t) return;
+    e.preventDefault();
+    moveTo(t.clientX, t.clientY);
+  };
+
+  const moveTo = (clientX: number, clientY: number) => {
+    const panel = chatRef.current;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const w = panel?.offsetWidth || 420;
+    const h = panel?.offsetHeight || 500;
+    const dx = clientX - dragState.current.startX;
+    const dy = clientY - dragState.current.startY;
+    let left = dragState.current.origLeft + dx;
+    let top = dragState.current.origTop + dy;
+    // clamp
+    left = Math.min(Math.max(8, left), Math.max(8, vw - w - 8));
+    top = Math.min(Math.max(8, top), Math.max(8, vh - h - 8));
+    setChatPos({ top, left });
+  };
+
+  const endDrag = () => {
+    dragState.current.dragging = false;
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', endDrag);
+    document.removeEventListener('touchmove', onTouchMove);
+    document.removeEventListener('touchend', endDrag);
+  };
 
   // Load threads
   useEffect(() => {
     if (!user) return;
     messagesAPI.threads()
-      .then(data => setThreads(Array.isArray(data) ? data : []))
-      .catch(console.error);
+      .then(response => {
+        const threadsData = response.data?.threads || [];
+        const transformed = threadsData.map((t: any) => ({
+          user: {
+            id: t.user_id,
+            username: t.user_name || 'unknown',
+            full_name: t.user_name
+          },
+          last_message: t.last_message?.content || '',
+          unread_count: t.unread_count || 0,
+          timestamp: t.last_message?.created_at || new Date().toISOString()
+        }));
+        setThreads(transformed);
+      })
+      .catch(err => {
+        console.error('Failed to load threads:', err);
+        setThreads([]);
+      });
   }, [user]);
 
   // Load conversation when user is selected
@@ -57,8 +177,14 @@ export default function MessageDrawer({ onClose }: { onClose: () => void }) {
     if (!selectedUser || !user) return;
     setMessages([]); // Reset messages when switching users
     messagesAPI.conversation(selectedUser.id)
-      .then(data => setMessages(Array.isArray(data) ? data : []))
-      .catch(console.error);
+      .then(response => {
+        const messagesData = response.data?.messages || [];
+        setMessages(Array.isArray(messagesData) ? messagesData : []);
+      })
+      .catch(err => {
+        console.error('Failed to load conversation:', err);
+        setMessages([]);
+      });
   }, [selectedUser, user]);
 
   // Socket listeners
@@ -90,12 +216,20 @@ export default function MessageDrawer({ onClose }: { onClose: () => void }) {
   }, [messages]);
 
   const filteredUsers = SAMPLE_USERS.filter(u =>
-    u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    u.id !== user?.id && (
+      u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedUser || !user || sending) return;
+    
+    // Prevent messaging yourself
+    if (selectedUser.id === user.id) {
+      alert('You cannot send messages to yourself');
+      return;
+    }
     
     setSending(true);
     try {
@@ -104,8 +238,10 @@ export default function MessageDrawer({ onClose }: { onClose: () => void }) {
         content: newMessage.trim()
       });
       setNewMessage('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to send message:', error);
+      const errorMsg = error?.response?.data?.error || 'Failed to send message. Please try again.';
+      alert(errorMsg);
     } finally {
       setSending(false);
     }
@@ -121,10 +257,11 @@ export default function MessageDrawer({ onClose }: { onClose: () => void }) {
   return (
     <>
       {/* Messages List Panel */}
+      {messagesVisible && (
       <div id="messages-panel">
         <div className="messages-header">
           <h3 className="messages-title">Messages</h3>
-          <button onClick={onClose} className="messages-close-btn">
+          <button onClick={() => setMessagesVisible(false)} className="messages-close-btn" aria-label="Hide messages list">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
               <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
             </svg>
@@ -190,11 +327,16 @@ export default function MessageDrawer({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </div>
+      )}
 
       {/* Chat Panel */}
       {selectedUser && (
-        <div id="chat-panel">
-          <div className="chat-header">
+        <div
+          id="chat-panel"
+          ref={chatRef}
+          style={chatPos ? { position: 'fixed', top: chatPos.top, left: chatPos.left, right: 'auto' } : undefined}
+        >
+          <div className="chat-header" onMouseDown={onMouseDownHeader} onTouchStart={onTouchStartHeader} style={{ cursor: 'move' }}>
             <div className="chat-header-user">
               <div className="chat-user-avatar">
                 {(selectedUser.full_name || selectedUser.username).charAt(0).toUpperCase()}
@@ -204,11 +346,18 @@ export default function MessageDrawer({ onClose }: { onClose: () => void }) {
                 <div className="chat-user-status">@{selectedUser.username}</div>
               </div>
             </div>
-            <button onClick={() => setSelectedUser(null)} className="chat-close-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-                <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
-              </svg>
-            </button>
+            <div className="chat-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {!messagesVisible && (
+                <button onClick={() => setMessagesVisible(true)} className="neo-btn" aria-label="Show messages list">
+                  Users
+                </button>
+              )}
+              <button onClick={() => setSelectedUser(null)} className="chat-close-btn" aria-label="Close chat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                  <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div className="chat-messages">

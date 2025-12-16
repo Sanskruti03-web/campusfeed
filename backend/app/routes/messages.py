@@ -40,6 +40,7 @@ def list_threads():
             threads[other_id] = {
                 "user_id": other_id,
                 "user_name": other_user.name if other_user else "Unknown",
+                "username": other_user.email.split('@')[0] if other_user else "unknown",
                 "last_message": _serialize_message(m),
                 "unread_count": 0,
             }

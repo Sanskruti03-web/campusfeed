@@ -361,12 +361,13 @@ html {
 
 /* Messages Panel - User List */
 #messages-panel {
-  position: absolute;
-  left: 5rem;
-  top: 0;
+  position: fixed;
+  left: 7rem;
+  bottom: 1.57rem;
   z-index: 50;
   width: 20rem;
-  max-height: 70vh;
+
+  height: calc(70vh - 6rem);
   background: var(--color-surface);
   border-radius: 1.5rem;
   border: 1px solid var(--color-border);
@@ -377,11 +378,11 @@ html {
 
 /* Chat Panel - Conversation */
 #chat-panel {
-  position: absolute;
-  left: 26rem;
-  top: 0;
+  position: fixed;
+  right: 1rem;
+  top: 5rem;
   z-index: 50;
-  width: 26rem;
+  width: min(26rem, calc(100vw - 28rem));
   max-height: 70vh;
   background: var(--color-surface);
   border-radius: 1.5rem;
