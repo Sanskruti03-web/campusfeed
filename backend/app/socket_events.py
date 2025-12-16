@@ -6,8 +6,8 @@ from flask_socketio import join_room, leave_room, disconnect
 def register_socket_events(socketio):
     @socketio.on("connect")
     def handle_connect():
+        # Allow connection, but only join room when authenticated
         if not current_user.is_authenticated:
-            disconnect()
             return
         room = f"user_{current_user.id}"
         join_room(room)

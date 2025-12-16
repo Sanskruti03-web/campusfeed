@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
+import SocketStatus from "@/components/SocketStatus";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,6 +35,7 @@ export default function RootLayout({
                 <main className="px-4 max-w-7xl mx-auto pb-16 bg-deep">
                   {children}
                 </main>
+                <SocketStatus />
               </div>
             </AuthProvider>
           </ThemeProvider>
