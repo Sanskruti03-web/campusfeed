@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import NotificationDropdown from './NotificationDropdown';
+
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -61,12 +61,12 @@ export default function Navbar() {
   // Active search: update URL as user types (debounced)
   useEffect(() => {
     if (!isTyping) return;
-    
+
     const t = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
       const currentQ = searchParams.get('q') || '';
       const trimmedSearch = search.trim();
-      
+
       // Only update if value actually changed
       if (trimmedSearch !== currentQ) {
         if (trimmedSearch) params.set('q', trimmedSearch);

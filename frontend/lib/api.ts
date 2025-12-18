@@ -14,13 +14,13 @@ export const api = axios.create({
 export const authAPI = {
   signup: (data: { email: string; password: string; name: string }) =>
     api.post('/auth/signup', data),
-  
+
   verify: (token: string) =>
     api.get(`/auth/verify?token=${token}`),
-  
+
   login: (data: { email: string; password: string }) =>
     api.post('/auth/login', data),
-  
+
   logout: () =>
     api.post('/auth/logout'),
 
@@ -32,16 +32,16 @@ export const authAPI = {
 export const postsAPI = {
   list: (category?: string, search?: string, sort?: string) =>
     api.get('/posts', { params: { category, search, sort, limit: 200 } }),
-  
+
   get: (id: number) =>
     api.get(`/posts/${id}`),
-  
+
   create: (data: { title: string; content_md: string; category: string }) =>
     api.post('/posts', data),
-  
+
   update: (id: number, data: { title?: string; content_md?: string; category?: string }) =>
     api.patch(`/posts/${id}`, data),
-  
+
   delete: (id: number) =>
     api.delete(`/posts/${id}`),
 };
@@ -50,13 +50,13 @@ export const postsAPI = {
 export const commentsAPI = {
   list: (postId: number) =>
     api.get(`/comments/post/${postId}`),
-  
+
   create: (postId: number, data: { content: string; parent_id?: number }) =>
     api.post(`/comments/post/${postId}`, data),
-  
+
   update: (id: number, data: { content: string }) =>
     api.patch(`/comments/${id}`, data),
-  
+
   delete: (id: number) =>
     api.delete(`/comments/${id}`),
 };
@@ -65,13 +65,13 @@ export const commentsAPI = {
 export const reactionsAPI = {
   add: (data: { post_id?: number; comment_id?: number; type: string }) =>
     api.post('/reactions', data),
-  
+
   remove: (data: { post_id?: number; comment_id?: number; type: string }) =>
     api.delete('/reactions', { data }),
-  
+
   getForPost: (postId: number) =>
     api.get(`/reactions/post/${postId}`),
-  
+
   getForComment: (commentId: number) =>
     api.get(`/reactions/comment/${commentId}`),
 };
@@ -92,10 +92,10 @@ export const mediaAPI = {
 export const usersAPI = {
   get: (id: number) =>
     api.get(`/users/${id}`),
-  
+
   getPosts: (id: number) =>
     api.get(`/users/${id}/posts`),
-  
+
   getComments: (id: number) =>
     api.get(`/users/${id}/comments`),
 };
@@ -104,13 +104,13 @@ export const usersAPI = {
 export const notificationsAPI = {
   list: () =>
     api.get('/notifications'),
-  
+
   markAsRead: (id: number) =>
     api.post(`/notifications/${id}/read`),
-  
+
   markAllAsRead: () =>
     api.post('/notifications/read-all'),
-  
+
   getUnreadCount: () =>
     api.get('/notifications/unread-count'),
 };
@@ -121,4 +121,5 @@ export const messagesAPI = {
   conversation: (userId: number) => api.get(`/messages/conversation/${userId}`),
   send: (data: { recipient_id: number; content: string }) => api.post('/messages', data),
   markRead: (id: number) => api.post(`/messages/${id}/read`),
+  getUnreadCount: () => api.get('/messages/unread-count'),
 };

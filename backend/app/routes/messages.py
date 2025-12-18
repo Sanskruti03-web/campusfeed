@@ -137,5 +137,29 @@ def mark_message_read(message_id):
         return jsonify({"error": "Unauthorized"}), 403
 
     message.is_read = True
+    
+    # Also find and mark associated notification as read
+    # We look for unread 'direct_message' notifications from this sender
+    # This is a bit loose but best we can do without a direct link
+    Notification.query.filter_by(
+        user_id=current_user.id,
+        actor_id=message.sender_id,
+        type="direct_message",
+        is_read=False
+    ).update({"is_read": True})
+    
     db.session.commit()
     return jsonify({"success": True})
+
+
+@messages_bp.get("/unread-count")
+@login_required
+@limiter.limit("300/minute")
+def get_unread_count():
+    """Get total count of unread messages for current user"""
+    count = Message.query.filter_by(
+        recipient_id=current_user.id,
+        is_read=False
+    ).count()
+    
+    return jsonify({"count": count})

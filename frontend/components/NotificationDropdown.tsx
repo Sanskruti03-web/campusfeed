@@ -42,7 +42,7 @@ export default function NotificationDropdown() {
 
   useEffect(() => {
     fetchNotifications();
-    
+
     // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     const socket = getSocket();
@@ -149,7 +149,18 @@ export default function NotificationDropdown() {
             )}
           </div>
 
-          <div className="max-h-96 overflow-y-auto">
+          <div
+            className="max-h-96 overflow-y-auto"
+            onWheel={(e) => {
+              const target = e.currentTarget;
+              const atTop = target.scrollTop === 0;
+              const atBottom = target.scrollTop + target.clientHeight >= target.scrollHeight;
+              if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+                e.preventDefault();
+              }
+              e.stopPropagation();
+            }}
+          >
             {loading ? (
               <div className="p-8 text-center text-muted">
                 <div className="animate-spin w-8 h-8 border-4 border-[var(--color-highlight)] border-t-transparent rounded-full mx-auto"></div>
@@ -163,9 +174,8 @@ export default function NotificationDropdown() {
                 {notifications.map((notif) => (
                   <div
                     key={notif.id}
-                    className={`p-4 hover:bg-[var(--color-surface-soft)] transition-colors ${
-                      !notif.is_read ? 'bg-[var(--color-surface-soft)]/50' : ''
-                    }`}
+                    className={`p-4 hover:bg-[var(--color-surface-soft)] transition-colors ${!notif.is_read ? 'bg-[var(--color-surface-soft)]/50' : ''
+                      }`}
                   >
                     <Link
                       href={notif.post_id ? `/posts/${notif.post_id}` : '/'}
@@ -174,6 +184,14 @@ export default function NotificationDropdown() {
                           handleMarkAsRead(notif.id);
                         }
                         setIsOpen(false);
+
+                        if (notif.type === 'direct_message') {
+                          // Dispatch event to open message drawer
+                          // We use a custom event that Sidebar/MessageDrawer can listen to
+                          window.dispatchEvent(new CustomEvent('open-chat', {
+                            detail: { userId: notif.actor_id }
+                          }));
+                        }
                       }}
                       className="block"
                     >

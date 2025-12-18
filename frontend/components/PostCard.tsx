@@ -36,7 +36,7 @@ export default function PostCard({ post }: { post: Post }) {
           {coverUrl ? (
             <>
               {/* Image Section */}
-              <div className="relative w-full overflow-hidden rounded-t-[1 rem]">
+              <div className="relative w-full overflow-hidden rounded-t-[1rem]">
                 {!imageLoaded && (
                   <div className="absolute inset-0 bg-[#5E558A33] animate-pulse" />
                 )}
@@ -65,7 +65,7 @@ export default function PostCard({ post }: { post: Post }) {
                   )}
                 </div>
               </div>
-              
+
               {/* Text Section */}
               <div className="p-4 flex flex-col gap-2">
                 <h3 className="text-lg font-semibold gradient-text-primary line-clamp-2">
