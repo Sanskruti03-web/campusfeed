@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
+import { Bell, Heart, MessageCircle, UserPlus, Star, Info } from 'lucide-react';
 import { notificationsAPI } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 
@@ -18,11 +19,16 @@ interface Notification {
   created_at: string;
 }
 
-export default function NotificationDropdown() {
+interface NotificationDropdownProps {
+  isCollapsed?: boolean;
+}
+
+export default function NotificationDropdown({ isCollapsed = false }: NotificationDropdownProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = async () => {
     try {
@@ -43,7 +49,6 @@ export default function NotificationDropdown() {
   useEffect(() => {
     fetchNotifications();
 
-    // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     const socket = getSocket();
     const handleNew = (notif: any) => {
@@ -96,119 +101,131 @@ export default function NotificationDropdown() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'comment_reply':
-        return '💬';
+        return <MessageCircle size={16} className="text-blue-500" />;
       case 'post_reaction':
       case 'comment_reaction':
-        return '❤️';
+        return <Heart size={16} className="text-pink-500" />;
+      case 'follow':
+        return <UserPlus size={16} className="text-green-500" />;
+      case 'mention':
+        return <Star size={16} className="text-yellow-500" />;
       default:
-        return '🔔';
+        return <Info size={16} className="text-[var(--color-highlight)]" />;
     }
   };
 
+  // Close when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div className="relative">
-      <div className="bell-frame w-12 h-12 rounded-xl group">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="bell-inner neo-icon relative flex items-center justify-center w-full h-full rounded-xl transition-colors"
-        >
-          <div className="w-6 h-6 text-[var(--color-text)]/70 group-hover:text-[var(--color-text)] transition-colors">
-            <svg
-              className="w-full h-full"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          flex items-center gap-4 py-3 rounded-2xl transition-all duration-300 group relative w-full
+          ${isOpen
+            ? 'bg-gradient-to-r from-[var(--color-highlight)]/10 to-transparent text-[var(--color-highlight)] font-bold'
+            : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-soft)] hover:text-[var(--color-text)]'}
+          ${isCollapsed ? 'justify-center px-0' : 'px-4'}
+        `}
+      >
+        <div className="relative">
+          <div className={isOpen ? 'scale-110' : 'group-hover:scale-110 transition-transform'}>
+            <Bell size={24} strokeWidth={isOpen ? 2.5 : 2} />
           </div>
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 rounded-full">
+            <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-[var(--color-bg-deep)] font-bold shadow-sm">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
-        </button>
-      </div>
+        </div>
+        {!isCollapsed && <span className="hidden lg:block text-sm tracking-wide">Notif</span>}
+
+        {isOpen && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[var(--color-highlight)] rounded-r-full" />
+        )}
+      </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-[var(--color-surface)] rounded-lg shadow-lg border border-[var(--color-border)] z-50">
-          <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-            <h3 className="text-lg font-semibold text-[var(--color-text)]">Notifications</h3>
+        <div className="fixed left-[5.5rem] lg:left-[17rem] top-4 w-[24rem] max-w-[calc(100vw-6rem)] bg-[var(--color-surface)]/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-[var(--color-border)] z-[200] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between p-4 px-6 border-b border-[var(--color-border)] bg-[var(--color-surface-soft)]/30">
+            <h3 className="text-lg font-bold font-outfit text-[var(--color-text)]">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="text-sm text-[var(--color-highlight)] hover:underline"
+                className="text-xs font-semibold text-[var(--color-highlight)] hover:underline uppercase tracking-wide"
               >
-                Mark all as read
+                Mark all read
               </button>
             )}
           </div>
 
-          <div
-            className="max-h-96 overflow-y-auto"
-            onWheel={(e) => {
-              const target = e.currentTarget;
-              const atTop = target.scrollTop === 0;
-              const atBottom = target.scrollTop + target.clientHeight >= target.scrollHeight;
-              if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
-                e.preventDefault();
-              }
-              e.stopPropagation();
-            }}
-          >
+          <div className="max-h-[70vh] overflow-y-auto">
             {loading ? (
-              <div className="p-8 text-center text-muted">
-                <div className="animate-spin w-8 h-8 border-4 border-[var(--color-highlight)] border-t-transparent rounded-full mx-auto"></div>
+              <div className="p-12 text-center text-[var(--color-text-muted)]">
+                <div className="animate-spin w-8 h-8 border-4 border-[var(--color-highlight)] border-t-transparent rounded-full mx-auto mb-3"></div>
+                <p className="text-sm">Loading updates...</p>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-8 text-center text-muted">
-                No notifications yet
+              <div className="p-12 text-center text-[var(--color-text-muted)]">
+                <div className="w-16 h-16 bg-[var(--color-surface-soft)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Bell size={24} className="opacity-50" />
+                </div>
+                <p className="font-medium">No details yet</p>
+                <p className="text-sm opacity-60">We'll notify you when something happens.</p>
               </div>
             ) : (
-              <div className="divide-y divide-[var(--color-border)]">
+              <div className="divide-y divide-[var(--color-border)]/50">
                 {notifications.map((notif) => (
                   <div
                     key={notif.id}
-                    className={`p-4 hover:bg-[var(--color-surface-soft)] transition-colors ${!notif.is_read ? 'bg-[var(--color-surface-soft)]/50' : ''
-                      }`}
+                    className={`relative group transition-colors hover:bg-[var(--color-surface-soft)] ${!notif.is_read ? 'bg-[var(--color-highlight)]/5' : ''}`}
                   >
                     <Link
                       href={notif.post_id ? `/posts/${notif.post_id}` : '/'}
                       onClick={() => {
-                        if (!notif.is_read) {
-                          handleMarkAsRead(notif.id);
-                        }
+                        if (!notif.is_read) handleMarkAsRead(notif.id);
                         setIsOpen(false);
-
-                        if (notif.type === 'direct_message') {
-                          // Dispatch event to open message drawer
-                          // We use a custom event that Sidebar/MessageDrawer can listen to
-                          window.dispatchEvent(new CustomEvent('open-chat', {
-                            detail: { userId: notif.actor_id }
-                          }));
-                        }
                       }}
-                      className="block"
+                      className="flex gap-4 p-4"
                     >
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">{getNotificationIcon(notif.type)}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-[var(--color-text)]">{notif.content}</p>
-                          <p className="text-xs text-muted mt-1">
-                            {formatDistanceToNow(new Date(notif.created_at), {
-                              addSuffix: true,
-                            })}
-                          </p>
+                      {/* Avatar */}
+                      <div className="relative shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-highlight)] to-[var(--color-highlight-alt)] flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-[var(--color-bg-deep)]">
+                          {notif.actor_name.charAt(0).toUpperCase()}
                         </div>
-                        {!notif.is_read && (
-                          <div className="w-2 h-2 bg-[var(--color-highlight)] rounded-full mt-1"></div>
-                        )}
+                        <div className="absolute -bottom-1 -right-1 p-1 bg-[var(--color-surface)] rounded-full shadow-sm ring-1 ring-[var(--color-border)]">
+                          {getNotificationIcon(notif.type)}
+                        </div>
                       </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-[var(--color-text)] leading-snug">
+                          <span className="font-bold">{notif.actor_name}</span>{' '}
+                          <span className="text-[var(--color-text-muted)]">
+                            {notif.content.replace(notif.actor_name, '').trim()}
+                          </span>
+                        </p>
+                        <p className="text-xs text-[var(--color-text-muted)] mt-1.5 font-medium">
+                          {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+
+                      {!notif.is_read && (
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-[var(--color-highlight)] rounded-full shadow-[0_0_8px_var(--color-highlight)]"></div>
+                      )}
                     </Link>
                   </div>
                 ))}
@@ -216,13 +233,6 @@ export default function NotificationDropdown() {
             )}
           </div>
         </div>
-      )}
-
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setIsOpen(false)}
-        ></div>
       )}
     </div>
   );

@@ -41,6 +41,8 @@ def list_posts():
         q = q.outerjoin(Reaction, (Reaction.post_id == Post.id) & (Reaction.comment_id == None))
         q = q.group_by(Post.id)
         q = q.order_by(func.count(Reaction.id).desc(), Post.created_at.desc())
+    elif sort == "oldest":
+        q = q.order_by(Post.created_at.asc())
     else:
         q = q.order_by(Post.created_at.desc())
 
@@ -58,8 +60,8 @@ def list_posts():
             "category": p.category,
             "user_id": p.user_id,
             "user_name": user.name if user else "Unknown",
-            "created_at": p.created_at.isoformat(),
-            "edited_at": p.edited_at.isoformat() if p.edited_at else None,
+            "created_at": p.created_at.isoformat() + "Z",
+            "edited_at": (p.edited_at.isoformat() + "Z") if p.edited_at else None,
             "cover_url": preview_url,
         })
 
@@ -99,8 +101,8 @@ def get_post(post_id):
         "content_md": post.content_md,
         "content_html": post.content_html,
         "category": post.category,
-        "created_at": post.created_at.isoformat(),
-        "edited_at": post.edited_at.isoformat() if post.edited_at else None,
+        "created_at": post.created_at.isoformat() + "Z",
+        "edited_at": (post.edited_at.isoformat() + "Z") if post.edited_at else None,
         "media": [{"id": m.id, "url": m.url, "type": m.type} for m in media]
     })
 

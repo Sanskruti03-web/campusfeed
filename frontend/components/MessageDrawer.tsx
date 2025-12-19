@@ -348,28 +348,40 @@ export default function MessageDrawer({ onClose, initialUserId }: { onClose: () 
     <>
       {/* Messages List Panel */}
       {messagesVisible && (
-        <div id="messages-panel">
-          <div className="messages-header">
-            <h3 className="messages-title">Messages</h3>
-            <button onClick={() => setMessagesVisible(false)} className="messages-close-btn" aria-label="Hide messages list" title="Hide message list">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-                <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
+        <div
+          id="messages-panel"
+          className="fixed right-4 bottom-4 w-96 max-h-[600px] flex flex-col z-[100] !bg-[var(--color-bg-deep)]/95 !backdrop-blur-2xl !border-[var(--color-border)] shadow-2xl !rounded-[2rem] border"
+          style={{ height: 'calc(100vh - 100px)' }}
+        >
+          <div className="p-6 border-b border-[var(--color-border)] flex items-center justify-between bg-[var(--color-surface-soft)]/20">
+            <div>
+              <h3 className="text-xl font-bold font-outfit text-[var(--color-text)]">Messages</h3>
+              <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest font-bold mt-1">Direct Conversations</p>
+            </div>
+            <button onClick={() => {
+              setMessagesVisible(false);
+              // Do not call onClose() here so chat remains open if active
+            }} className="p-2 hover:bg-[var(--color-surface-soft)] rounded-xl transition-colors text-[var(--color-text-muted)]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
+                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
               </svg>
             </button>
           </div>
 
-          <div className="messages-search-container">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="messages-search-icon">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" strokeLinecap="round" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search people..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="message-search-input"
-            />
+          <div className="p-4">
+            <div className="relative group">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-highlight)] transition-colors">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" strokeLinecap="round" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Find a conversation..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-[var(--color-surface-soft)]/50 border border-[var(--color-border)] rounded-2xl py-2.5 pl-10 pr-4 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-highlight)]/50 transition-all text-[var(--color-text)]"
+              />
+            </div>
           </div>
 
           <div className="messages-list" onWheel={(e) => {
@@ -431,31 +443,35 @@ export default function MessageDrawer({ onClose, initialUserId }: { onClose: () 
         <div
           id="chat-panel"
           ref={chatRef}
-          style={chatPos ? { position: 'fixed', top: chatPos.top, left: chatPos.left, right: 'auto' } : undefined}
+          className="fixed z-[101] !bg-[var(--color-bg-deep)]/95 !backdrop-blur-2xl !border-[var(--color-border)] shadow-2xl !rounded-[2rem] overflow-hidden border"
+          style={chatPos ? { top: chatPos.top, left: chatPos.left, right: 'auto' } : undefined}
         >
-          <div className="chat-header" onMouseDown={onMouseDownHeader} onTouchStart={onTouchStartHeader} style={{ cursor: 'move' }}>
-            <div className="chat-header-user">
-              <div className="chat-user-avatar">
+          <div className="p-4 border-b border-[var(--color-border)] bg-[var(--color-surface-soft)]/30 flex items-center justify-between gap-4 select-none" onMouseDown={onMouseDownHeader} onTouchStart={onTouchStartHeader} style={{ cursor: 'move' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-highlight)] to-[var(--color-highlight-alt)] flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-white/10">
                 {(selectedUser.full_name || selectedUser.username).charAt(0).toUpperCase()}
               </div>
               <div>
-                <div className="chat-user-name">{selectedUser.full_name || selectedUser.username}</div>
-                <div className="chat-user-status">@{selectedUser.username}</div>
+                <div className="text-sm font-bold text-[var(--color-text)] tracking-tight">
+                  {selectedUser.full_name || selectedUser.username}
+                </div>
+                <div className="text-[10px] text-[var(--color-text-muted)] font-medium">@{selectedUser.username}</div>
               </div>
             </div>
-            <div className="chat-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+
+            <div className="flex items-center gap-1.5" onMouseDown={e => e.stopPropagation()}>
               {!messagesVisible && (
-                <button onClick={() => setMessagesVisible(true)} className="neo-btn" aria-label="Show messages list" style={{ fontSize: '0.75rem', padding: '0.4rem 0.7rem' }}>
-                  Users
+                <button onClick={() => setMessagesVisible(true)} className="px-3 py-1.5 bg-[var(--color-surface-soft)] text-[var(--color-text)] text-[10px] font-bold rounded-lg hover:bg-[var(--color-border)] transition-colors">
+                  VIEW ALL
                 </button>
               )}
-              <button onClick={() => setSelectedUser(null)} className="chat-close-btn" aria-label="Close chat" title="Close chat">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <button onClick={() => setSelectedUser(null)} className="p-2 hover:bg-[var(--color-surface-soft)] rounded-lg text-[var(--color-text-muted)] transition-colors">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
                   <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-              <button onClick={handleCloseAll} className="chat-close-btn" aria-label="Close all" title="Close all">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+              <button onClick={handleCloseAll} className="p-2 hover:bg-red-500/10 hover:text-red-500 rounded-lg text-[var(--color-text-muted)] transition-colors">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
                   <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
                 </svg>
               </button>
@@ -499,22 +515,22 @@ export default function MessageDrawer({ onClose, initialUserId }: { onClose: () 
             )}
           </div>
 
-          <div className="chat-input-container">
+          <div className="p-4 bg-[var(--color-bg-deep)]/50 backdrop-blur-xl border-t border-[var(--color-border)] flex items-center gap-3">
             <input
               type="text"
-              placeholder="Type a message..."
+              placeholder="Write a message..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="chat-input"
+              className="flex-1 bg-[var(--color-surface-soft)]/50 border border-[var(--color-border)] rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-highlight)]/50 transition-all text-[var(--color-text)]"
               disabled={sending}
             />
             <button
               onClick={sendMessage}
               disabled={!newMessage.trim() || sending}
-              className="chat-send-btn"
+              className="w-10 h-10 bg-gradient-to-br from-[var(--color-highlight)] to-[var(--color-highlight-alt)] text-white rounded-xl flex items-center justify-center shadow-lg shadow-[var(--color-highlight)]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100"
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 rotate-45 -translate-x-0.5 translate-y-0.5">
                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
               </svg>
             </button>

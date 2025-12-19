@@ -26,7 +26,7 @@ def list_comments(post_id):
             "user_name": c.user.name if c.user else "Unknown",
             "content": c.content,
             "depth": c.depth,
-            "created_at": c.created_at.isoformat(),
+            "created_at": c.created_at.isoformat() + "Z",
         }
     
     # Build tree structure
@@ -97,7 +97,7 @@ def add_comment(post_id):
                     "comment_id": notification.comment_id,
                     "actor_id": notification.actor_id,
                     "actor_name": current_user.name,
-                    "created_at": notification.created_at.isoformat(),
+                    "created_at": notification.created_at.isoformat() + "Z",
                     "is_read": notification.is_read,
                 },
                 room=f"user_{notification.user_id}",
@@ -123,7 +123,7 @@ def add_comment(post_id):
                 "comment_id": notification.comment_id,
                 "actor_id": notification.actor_id,
                 "actor_name": current_user.name,
-                "created_at": notification.created_at.isoformat(),
+                "created_at": notification.created_at.isoformat() + "Z",
                 "is_read": notification.is_read,
             },
             room=f"user_{notification.user_id}",

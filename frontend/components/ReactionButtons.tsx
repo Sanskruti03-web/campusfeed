@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 interface ReactionButtonsProps {
   postId?: number;
   commentId?: number;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 const REACTION_EMOJIS: Record<string, string> = {
@@ -33,8 +33,8 @@ export default function ReactionButtons({ postId, commentId, size = 'md' }: Reac
       const response = postId
         ? await reactionsAPI.getForPost(postId)
         : commentId
-        ? await reactionsAPI.getForComment(commentId)
-        : null;
+          ? await reactionsAPI.getForComment(commentId)
+          : null;
 
       if (response) {
         setReactions(response.data.counts || {});
@@ -54,7 +54,7 @@ export default function ReactionButtons({ postId, commentId, size = 'md' }: Reac
     setLoading(true);
     try {
       const isCurrentlyReacted = userReactions.includes(type);
-      
+
       if (isCurrentlyReacted) {
         // Remove reaction
         await reactionsAPI.remove({
@@ -88,8 +88,12 @@ export default function ReactionButtons({ postId, commentId, size = 'md' }: Reac
     }
   };
 
-  const buttonSize = size === 'sm' ? 'px-2 py-1 text-xs' : 'px-3 py-1.5 text-sm';
-  const emojiSize = size === 'sm' ? 'text-sm' : 'text-base';
+  const buttonSize = size === 'sm' ? 'px-2 py-1 text-xs'
+    : size === 'lg' ? 'px-4 py-2 text-base'
+      : 'px-3 py-1.5 text-sm';
+  const emojiSize = size === 'sm' ? 'text-sm'
+    : size === 'lg' ? 'text-xl'
+      : 'text-base';
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -102,11 +106,10 @@ export default function ReactionButtons({ postId, commentId, size = 'md' }: Reac
             key={type}
             onClick={() => handleReaction(type)}
             disabled={loading}
-            className={`${buttonSize} rounded-full border transition-all flex items-center gap-1 ${
-              isReacted
-                ? 'bg-[var(--color-highlight)] border-[var(--color-highlight)] text-white'
-                : 'bg-[var(--color-surface)] border-[var(--color-border)] hover:bg-[var(--color-surface-soft)] text-[var(--color-text)]'
-            } ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+            className={`${buttonSize} rounded-full border transition-all flex items-center gap-1 ${isReacted
+              ? 'bg-[var(--color-highlight)] border-[var(--color-highlight)] text-white'
+              : 'bg-[var(--color-surface)] border-[var(--color-border)] hover:bg-[var(--color-surface-soft)] text-[var(--color-text)]'
+              } ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
             title={type.charAt(0).toUpperCase() + type.slice(1)}
           >
             <span className={emojiSize}>{emoji}</span>

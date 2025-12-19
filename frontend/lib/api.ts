@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -98,6 +98,15 @@ export const usersAPI = {
 
   getComments: (id: number) =>
     api.get(`/users/${id}/comments`),
+
+  update: (data: { bio?: string; branch?: string; year?: string; profile_pic?: string }) =>
+    api.patch('/users/me', data),
+
+  search: (query: string) =>
+    api.get(`/users?search=${encodeURIComponent(query)}`),
+
+  sendFeedback: (data: { content: string; type: string }) =>
+    api.post('/users/feedback', data),
 };
 
 // Notifications API

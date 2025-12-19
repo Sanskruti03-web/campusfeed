@@ -28,7 +28,7 @@ def list_notifications():
             "actor_name": actor.name if actor else "Unknown",
             "actor_id": n.actor_id,
             "is_read": n.is_read,
-            "created_at": n.created_at.isoformat(),
+            "created_at": n.created_at.isoformat() + "Z",
         })
     
     return jsonify({"notifications": items})

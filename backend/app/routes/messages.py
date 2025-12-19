@@ -16,7 +16,7 @@ def _serialize_message(message: Message):
         "recipient_id": message.recipient_id,
         "content": message.content,
         "is_read": message.is_read,
-        "created_at": message.created_at.isoformat(),
+        "created_at": message.created_at.isoformat() + "Z",
     }
 
 
@@ -117,7 +117,7 @@ def send_message():
             "content": notification.content,
             "actor_id": notification.actor_id,
             "actor_name": current_user.name,
-            "created_at": notification.created_at.isoformat(),
+            "created_at": notification.created_at.isoformat() + "Z",
             "is_read": notification.is_read,
         },
         room=room_recipient,

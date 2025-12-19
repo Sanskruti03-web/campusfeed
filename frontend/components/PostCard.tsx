@@ -101,8 +101,12 @@ export default function PostCard({ post }: { post: Post }) {
               >
                 {post.category}
               </button>
-              <h3 className="text-lg font-semibold gradient-text-primary mb-2 line-clamp-2">{post.title}</h3>
-              <p className="text-sm text-muted line-clamp-4 whitespace-pre-wrap">{post.content || post.body || ''}</p>
+              <h3 className="text-xl font-bold gradient-text-primary mb-3 line-clamp-2 leading-tight group-hover:scale-[1.01] origin-left transition-transform">
+                {post.title}
+              </h3>
+              <p className="text-sm text-[var(--color-text-muted)] line-clamp-3 whitespace-pre-wrap leading-relaxed mb-4">
+                {post.content || post.body || ''}
+              </p>
               <div className="mt-3 flex items-center gap-2 text-[11px] font-medium text-muted">
                 <button
                   type="button"

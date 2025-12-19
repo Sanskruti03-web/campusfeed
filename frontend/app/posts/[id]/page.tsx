@@ -143,61 +143,93 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-12">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <Link href="/" className="text-[var(--color-highlight)] hover:underline mb-6 inline-block">
-          ← Back to feed
+        <Link href="/" className="inline-flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-highlight)] mb-6 transition-colors font-medium">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+          Back to Feed
         </Link>
 
-        <div className="card-frame mb-6">
-          <div className="card-inner">
-            <div className="flex items-start justify-between mb-4 gap-2">
-              <button className="category-pill">
+        {/* Main Post Card */}
+        <div className="card-frame mb-8 overflow-visible">
+          <div className="card-inner p-8">
+            <div className="flex items-start justify-between mb-6 gap-2">
+              <button
+                onClick={() => router.push(`/?category=${encodeURIComponent(post.category)}`)}
+                className="category-pill hover:scale-105 transition-transform"
+              >
                 {post.category}
               </button>
               {user && user.id === post.user_id && (
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <Link
                     href={`/posts/${post.id}/edit`}
-                    className="text-sm text-[var(--color-highlight)] hover:underline font-medium"
+                    className="p-2 rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-highlight)]/10 hover:text-[var(--color-highlight)] transition-colors"
+                    title="Edit Post"
                   >
-                    Edit
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
                   </Link>
-                  <button onClick={handleDelete} className="text-sm text-red-600 hover:underline font-medium">
-                    Delete
+                  <button
+                    onClick={handleDelete}
+                    className="p-2 rounded-lg text-red-500/70 hover:bg-red-500/10 hover:text-red-600 transition-colors"
+                    title="Delete Post"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
                   </button>
                 </div>
               )}
             </div>
 
-            <h1 className="text-3xl font-bold gradient-text-primary mb-3">{post.title}</h1>
-            <p className="text-sm text-muted mb-6">
-              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-              {post.edited_at && <span className="ml-2">(edited)</span>}
-            </p>
+            <h1 className="text-4xl font-extrabold font-outfit text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-text)] to-[var(--color-text-muted)] mb-4 leading-tight">
+              {post.title}
+            </h1>
 
-            <div className="prose max-w-none mb-6">
+            <div className="flex items-center gap-3 mb-8 text-sm text-[var(--color-text-muted)]">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[var(--color-highlight)] to-[var(--color-highlight-alt)] flex items-center justify-center text-[10px] text-white font-bold">
+                  {(post as any).user_name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <Link href={`/users/${post.user_id}`} className="font-semibold hover:text-[var(--color-highlight)] transition-colors">
+                  {(post as any).user_name || 'Anonymous'}
+                </Link>
+              </div>
+              <span className="text-[var(--color-border)]">•</span>
+              <span>
+                {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                {post.edited_at && <span className="ml-1 opacity-60">(edited)</span>}
+              </span>
+            </div>
+
+            <div className="prose prose-lg max-w-none mb-8 dark:prose-invert prose-headings:font-outfit prose-a:text-[var(--color-highlight)] prose-img:rounded-2xl prose-pre:bg-[var(--color-surface-soft)] prose-pre:border prose-pre:border-[var(--color-border)]">
               <ReactMarkdown>{post.content_md}</ReactMarkdown>
             </div>
 
             {post.media && post.media.length > 0 && (
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {post.media.map((m) => (
-                  <div key={m.id} className="relative">
+                  <div key={m.id} className="relative group overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-soft)]">
                     {m.type === 'image' ? (
-                      <img
-                        src={m.url.startsWith('http') ? m.url : `${apiBase}${m.url}`}
-                        alt="Post media"
-                        className="rounded-lg w-full"
-                      />
+                      <div className="relative aspect-video">
+                        <img
+                          src={m.url.startsWith('http') ? m.url : `${apiBase}${m.url}`}
+                          alt="Post attachment"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </div>
                     ) : (
                       <a
                         href={m.url.startsWith('http') ? m.url : `${apiBase}${m.url}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block p-4 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-surface-soft)]"
+                        className="flex items-center gap-4 p-6 hover:bg-[var(--color-surface)] transition-colors"
                       >
-                        📄 Document
+                        <div className="p-3 rounded-xl bg-[var(--color-highlight)]/10 text-[var(--color-highlight)]">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
+                        </div>
+                        <div>
+                          <p className="font-bold text-[var(--color-text)]">Attached Document</p>
+                          <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wide">Click to download</p>
+                        </div>
                       </a>
                     )}
                   </div>
@@ -205,73 +237,92 @@ export default function PostDetailPage() {
               </div>
             )}
 
-            <div className="mt-4">
-              <ReactionButtons postId={postId} size="md" />
+            <div className="pt-6 border-t border-[var(--color-border)] flex items-center justify-between">
+              <ReactionButtons postId={postId} size="lg" />
+              <button
+                onClick={() => document.getElementById('comment-input')?.focus()}
+                className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors font-medium"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                Write a comment
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="card-frame">
-          <div className="card-inner">
-            <h2 className="text-xl font-bold mb-6 gradient-text-primary">Comments ({comments.length})</h2>
+        {/* Comments Section */}
+        <div className="card-frame animate-in slide-in-from-bottom-4 duration-500">
+          <div className="card-inner p-8">
+            <h2 className="text-xl font-bold mb-6 gradient-text-primary flex items-center gap-2">
+              Comments <span className="px-2 py-0.5 rounded-lg bg-[var(--color-surface-soft)] text-sm text-[var(--color-text)]">{comments.length}</span>
+            </h2>
 
             {user && (
-              <form onSubmit={handleCommentSubmit} className="mb-6">
+              <form onSubmit={handleCommentSubmit} className="mb-8 relative group">
                 {replyTo && (
-                  <div className="bg-[var(--color-surface-soft)] p-4 rounded-lg mb-3 border-l-4 border-[var(--color-highlight)]">
-                    <div className="text-sm flex justify-between items-start">
-                      <div className="flex-1">
-                        <span className="font-medium text-[var(--color-text)]">
-                          Replying to {replyToUserName}
-                        </span>
-                        <p className="text-muted mt-1 italic text-xs line-clamp-2">
-                          "{replyToContent}"
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReplyTo(null);
-                          setReplyToUserName('');
-                          setReplyToContent('');
-                        }}
-                        className="text-[var(--color-highlight)] hover:underline ml-2 flex-shrink-0"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                  <div className="absolute -top-10 left-0 right-0 bg-[var(--color-surface-soft)]/80 backdrop-blur rounded-t-xl px-4 py-2 border border-[var(--color-border)] border-b-0 flex justify-between items-center text-sm animate-in slide-in-from-bottom-2">
+                    <span className="text-[var(--color-text-muted)] flex items-center gap-2">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 14L4 9l9-7" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
+                      Replying to <strong>{replyToUserName}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyTo(null);
+                        setReplyToUserName('');
+                        setReplyToContent('');
+                      }}
+                      className="text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    </button>
                   </div>
                 )}
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Write a comment..."
-                  className="neo-input w-full resize-none"
-                  rows={3}
-                />
-                <button
-                  type="submit"
-                  className="mt-3 neo-btn bg-[var(--color-highlight)] text-white"
-                >
-                  Post Comment
-                </button>
+
+                <div className={`relative rounded-2xl bg-[var(--color-bg-deep)] border-2 transition-all ${replyTo ? 'rounded-t-none border-[var(--color-highlight)]' : 'border-[var(--color-border)] focus-within:border-[var(--color-highlight)]'}`}>
+                  <textarea
+                    id="comment-input"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Share your thoughts..."
+                    className="w-full bg-transparent p-4 min-h-[100px] resize-none focus:outline-none rounded-2xl font-medium placeholder-[var(--color-text-muted)]/50"
+                  />
+                  <div className="flex justify-end p-2 border-t border-[var(--color-border)]/50">
+                    <button
+                      type="submit"
+                      disabled={!newComment.trim()}
+                      className="neo-btn px-6 py-2 bg-[var(--color-highlight)] text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Post Comment
+                    </button>
+                  </div>
+                </div>
               </form>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {comments.map((comment) => (
-                <CommentItem
-                  key={comment.id}
-                  comment={comment}
-                  onReply={(commentId, userName, content) => {
-                    setReplyTo(commentId);
-                    setReplyToUserName(userName);
-                    setReplyToContent(content);
-                    document.querySelector('textarea')?.focus();
-                  }}
-                  showReplyButton={!!user}
-                />
+                <div key={comment.id} className="animate-in fade-in duration-300">
+                  <CommentItem
+                    comment={comment}
+                    onReply={(commentId, userName, content) => {
+                      setReplyTo(commentId);
+                      setReplyToUserName(userName);
+                      setReplyToContent(content);
+                      document.getElementById('comment-input')?.focus();
+                    }}
+                    showReplyButton={!!user}
+                  />
+                </div>
               ))}
+              {comments.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-surface-soft)] text-[var(--color-text-muted)] mb-3">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                  </div>
+                  <p className="text-[var(--color-text-muted)] font-medium">Be the first to share your thoughts!</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

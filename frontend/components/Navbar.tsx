@@ -81,36 +81,33 @@ export default function Navbar() {
   }, [search, isTyping]);
 
   return (
-    <nav className="px-4 sticky top-0 z-50 pt-4 bg-deep">
-      <div className="flex items-center h-20 px-4  backdrop-blur-sm gap-4 w-full max-w-7xl mx-auto">
+    <nav className="sticky top-0 z-40 w-full px-4 pt-4 pointer-events-none">
+      <div className="max-w-7xl mx-auto h-20 bg-[var(--color-bg-deep)]/70 backdrop-blur-2xl border border-[var(--color-border)] rounded-3xl shadow-2xl px-6 flex items-center gap-4 pointer-events-auto">
         <div className="flex-1">
-          <div className="search-frame w-full rounded-2xl">
-            <form onSubmit={handleSearch} className="relative search-inner rounded-2xl bg-transparent">
-              <svg
-                className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text)]/60 pointer-events-none"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-              <input
-                style={{ paddingLeft: 50 }}
-                type="search"
-                placeholder="Search posts..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setIsTyping(true);
-                }}
-                className="pl-[60px] neo-input w-full pr-6 py-3 text-base placeholder-[var(--color-text)]/50 bg-transparent"
-              />
-            </form>
-          </div>
+          <form onSubmit={handleSearch} className="relative group max-w-2xl">
+            <svg
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-highlight)] transition-colors pointer-events-none"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              type="search"
+              placeholder="Search posts, topics, or people..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setIsTyping(true);
+              }}
+              className="w-full bg-[var(--color-surface-soft)]/50 border border-transparent focus:border-[var(--color-highlight)]/30 rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-[var(--color-highlight)]/10 transition-all placeholder-[var(--color-text-muted)] text-[var(--color-text)]"
+            />
+          </form>
         </div>
 
         <div className="flex items-center gap-3">

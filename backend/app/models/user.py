@@ -34,5 +34,5 @@ class User(db.Model, UserMixin):
             "profile_pic": self.profile_pic,
             "verified": self.verified,
             "role": self.role,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "created_at": (self.created_at.isoformat() + "Z") if self.created_at else None,
         }

@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { postsAPI } from '@/lib/api';
 import CategoryFilter from '@/components/CategoryFilter';
 import PostCard from '@/components/PostCard';
+import SkeletonPost from '@/components/SkeletonPost';
 
 interface Post {
   id: number;
@@ -127,7 +128,7 @@ export default function Home() {
 
   const loadMorePosts = useCallback(() => {
     if (loadingMore || !hasMore) return;
-    
+
     setLoadingMore(true);
     setTimeout(() => {
       const currentLength = displayPosts.length;
@@ -214,31 +215,28 @@ export default function Home() {
         })()}
 
         {/* Search and Sort */}
-        {/* <div className="mb-6 flex flex-col sm:flex-row gap-4">
-          <div className="search-frame flex-1">
-            <input
-              type="text"
-              placeholder="Search posts..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="search-inner neo-input w-full"
-            />
-          </div>
-          <div className="search-frame sm:w-48">
+        {/* Mobile Category Filters */}
+        <div className="mb-6 md:hidden">
+          <CategoryFilter selected={category} onSelect={setCategory} />
+        </div>
+
+        {/* Sort Controls */}
+        <div className="mb-8 flex justify-end">
+          <div className="relative group">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--color-text-muted)] group-hover:text-[var(--color-highlight)] transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+            </div>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="search-inner neo-input w-full"
+              className="appearance-none bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] pl-5 pr-10 py-2.5 rounded-xl font-bold text-sm cursor-pointer shadow-sm hover:border-[var(--color-highlight)]/50 focus:outline-none focus:border-[var(--color-highlight)] focus:ring-1 focus:ring-[var(--color-highlight)] transition-all min-w-[160px]"
             >
-              <option value="newest">Newest First</option>
+              <option value="newest">Latest Posts</option>
               <option value="popular">Most Popular</option>
+              <option value="oldest">Oldest</option>
             </select>
           </div>
-        </div> */}
-
-        {/* <div className="mb-6">
-          <CategoryFilter selected={category} onSelect={setCategory} />
-        </div> */}
+        </div>
 
         {error && (
           <div className="card-frame mb-6">
@@ -248,36 +246,30 @@ export default function Home() {
           </div>
         )}
 
-        {loading ? (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="mb-5 break-inside-avoid">
-                <div className="card-frame animate-pulse">
-                  <div className="card-inner">
-                    <div className="h-48 bg-[var(--color-surface-soft)] mb-3"></div>
-                    <div className="h-4 bg-[var(--color-surface-soft)] rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-[var(--color-surface-soft)] rounded w-1/2"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {loading && displayPosts.length === 0 ? (
+          <div className="space-y-6">
+            <SkeletonPost />
+            <SkeletonPost />
+            <SkeletonPost />
           </div>
         ) : displayPosts.length === 0 ? (
-          <div className="card-frame text-center py-12">
-            <div className="card-inner">
-              <p className="text-muted text-lg">
-                {search || category ? 'No posts match your filters.' : 'No posts yet. Be the first to post!'}
-              </p>
+          <div className="flex flex-col items-center justify-center py-20 bg-[var(--color-surface)]/50 border border-[var(--color-border)] rounded-[2.5rem] text-center">
+            <div className="w-16 h-16 rounded-full bg-[var(--color-surface-soft)] flex items-center justify-center text-[var(--color-text-muted)] mb-4">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
             </div>
+            <h3 className="text-xl font-bold text-[var(--color-text)] mb-2">No posts found</h3>
+            <p className="text-[var(--color-text-muted)] max-w-sm">
+              {search || category ? 'Try adjusting your search or filters.' : 'Be the first to post something!'}
+            </p>
           </div>
         ) : (
           <>
-            <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+            <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5 space-y-5">
               {displayPosts.map((post, idx) => (
-                <div 
-                  key={post.id} 
-                  className="mb-5 break-inside-avoid masonry-item-enter"
-                  style={{ animationDelay: `${(idx % 12) * 35}ms` }}
+                <div
+                  key={post.id}
+                  className="break-inside-avoid animate-in fade-in duration-500 fill-mode-backwards"
+                  style={{ animationDelay: `${(idx % 5) * 100}ms` }}
                 >
                   <PostCard post={post} />
                 </div>
@@ -285,19 +277,23 @@ export default function Home() {
             </div>
 
             {/* Lazy load trigger */}
-            <div ref={observerTarget} className="w-full py-8 flex justify-center">
+            <div ref={observerTarget} className="w-full py-12 flex justify-center">
               {loadingMore && (
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-[var(--color-highlight)] rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-[var(--color-highlight)] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-[var(--color-highlight)] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2.5 h-2.5 bg-[var(--color-highlight)] rounded-full animate-bounce"></div>
+                  <div className="w-2.5 h-2.5 bg-[var(--color-highlight)] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2.5 h-2.5 bg-[var(--color-highlight)] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
               )}
               {hasMore && !loadingMore && !loading && displayPosts.length > 0 && (
-                <p className="text-[var(--color-text)]/60 text-sm">Scroll to load more posts...</p>
+                <p className="text-[var(--color-text-muted)] text-sm font-medium">Scroll for more</p>
               )}
               {!hasMore && displayPosts.length > 0 && (
-                <p className="text-[var(--color-text)]/60 text-sm">No more posts to load</p>
+                <div className="flex items-center gap-2 text-[var(--color-text-muted)] text-sm font-medium opacity-60">
+                  <div className="h-px w-8 bg-current"></div>
+                  <span>End of Feed</span>
+                  <div className="h-px w-8 bg-current"></div>
+                </div>
               )}
             </div>
           </>

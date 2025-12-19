@@ -27,7 +27,14 @@ def create_app():
     # CORS configuration for frontend on localhost:3000
     CORS(
         app,
-        resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}},
+        resources={r"/*": {"origins": [
+            "http://localhost:3000", 
+            "http://127.0.0.1:3000",
+            "http://localhost:3001",
+            "http://127.0.0.1:3001",
+            "http://localhost:3002",
+            "http://127.0.0.1:3002"
+        ]}},
         supports_credentials=True,
         expose_headers=["Content-Type"],
     )

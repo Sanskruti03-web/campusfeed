@@ -16,13 +16,13 @@ export default function EditPost() {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState<number | null>(null);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     content_md: '',
     category: 'General',
   });
-  
+
   const [existingMedia, setExistingMedia] = useState<{ id: number; url: string; type: string }[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
@@ -225,18 +225,16 @@ export default function EditPost() {
                         />
                       ) : (
                         <div className="w-full h-32 bg-[var(--color-surface-soft)] rounded-lg flex items-center justify-center">
-                        <span className="text-sm text-gray-600">PDF</span>
-                      </div>
-                      >
-                        <span className="text-xs text-muted">PDF</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                          <span className="text-sm text-gray-600">PDF</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs text-muted">
+                  Note: You can add new files but cannot remove existing ones in this version
+                </p>
               </div>
-              <p className="mt-3 text-xs text-muted">
-                Note: You can add new files but cannot remove existing ones in this version
-              </p>
             </div>
           )}
 
@@ -245,7 +243,7 @@ export default function EditPost() {
               <label className="block text-sm font-medium text-[var(--color-text)] mb-4">
                 Add New Attachments
               </label>
-              
+
               <div className="mb-4">
                 <input
                   type="file"
