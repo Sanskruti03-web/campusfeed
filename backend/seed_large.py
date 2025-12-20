@@ -162,6 +162,38 @@ def seed():
         except Exception as e:
              print(f"  ✗ Failed to add interactions: {e}")
 
+        # 5. Create Chats
+        print("💬 Generating chats...")
+        message_count = 0
+        # Pick random pairs of users
+        for _ in range(50): # 50 conversation pairs
+            sender, recipient = random.sample(users, 2)
+            # Generate a conversation history
+            num_messages = random.randint(2, 10)
+            base_time = datetime.utcnow() - timedelta(days=random.randint(1, 10))
+            
+            for m in range(num_messages):
+                msg_time = base_time + timedelta(minutes=m*random.randint(5, 60))
+                # Alternate sender
+                current_sender = sender if m % 2 == 0 else recipient
+                current_recipient = recipient if m % 2 == 0 else sender
+                
+                msg = Message(
+                    sender_id=current_sender.id,
+                    recipient_id=current_recipient.id,
+                    content=f"Hey, this is message {m} in our convo. {random_string(10)}",
+                    created_at=msg_time,
+                    is_read=True if m < num_messages - 1 else False # Last message unread
+                )
+                db.session.add(msg)
+                message_count += 1
+        
+        try:
+            db.session.commit()
+            print(f"  ✓ Added {message_count} messages")
+        except Exception as e:
+            print(f"  ✗ Failed to add messages: {e}")
+
         print("\n✅ Database seeded successfully!")
 
 if __name__ == "__main__":
