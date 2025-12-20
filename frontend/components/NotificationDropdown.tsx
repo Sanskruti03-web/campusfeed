@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Bell, Heart, MessageCircle, UserPlus, Star, Info } from 'lucide-react';
 import { notificationsAPI } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Notification {
   id: number;
@@ -24,6 +25,7 @@ interface NotificationDropdownProps {
 }
 
 export default function NotificationDropdown({ isCollapsed = false }: NotificationDropdownProps) {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -47,6 +49,8 @@ export default function NotificationDropdown({ isCollapsed = false }: Notificati
   };
 
   useEffect(() => {
+    if (!user) return;
+
     fetchNotifications();
 
     const interval = setInterval(fetchNotifications, 30000);
@@ -74,7 +78,7 @@ export default function NotificationDropdown({ isCollapsed = false }: Notificati
       clearInterval(interval);
       socket.off('notification:new', handleNew);
     };
-  }, []);
+  }, [user]);
 
   const handleMarkAsRead = async (id: number) => {
     try {

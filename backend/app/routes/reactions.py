@@ -26,16 +26,22 @@ def add_reaction():
     if not post_id and not comment_id:
         return jsonify({"error": "Target required"}), 400
     
-    # Check if reaction already exists - if so, just return success
+    # Check if reaction already exists
     existing = Reaction.query.filter_by(
         post_id=post_id, 
         comment_id=comment_id, 
-        user_id=current_user.id, 
-        type=type_
+        user_id=current_user.id
     ).first()
     
     if existing:
-        return jsonify({"id": existing.id, "message": "Already reacted"}), 200
+        if existing.type == type_:
+            return jsonify({"id": existing.id, "message": "Already reacted"}), 200
+        else:
+            # Update existing reaction type
+            existing.type = type_
+            db.session.commit()
+            # We should probably still notify if the type changed, but for now just updating is fine
+            return jsonify({"id": existing.id, "message": "Reaction updated"}), 200
     
     reaction = Reaction(post_id=post_id, comment_id=comment_id, user_id=current_user.id, type=type_)
     try:

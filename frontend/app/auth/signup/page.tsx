@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { Mail, Lock, User, ArrowRight, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -25,7 +26,8 @@ export default function SignupPage() {
       if (result.token_debug) {
         setVerifyToken(result.token_debug);
       }
-      alert('Signup successful! Check email for verification link.');
+      // alert('Signup successful! Check email for verification link.'); 
+      // Replaced alert with UI feedback state if needed, but the token display handles it for dev
     } catch (err: any) {
       setError(err.response?.data?.error || 'Signup failed');
     } finally {
@@ -34,102 +36,200 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
-      <div className="max-w-md w-full">
-        <div className="card-frame">
-          <div className="card-inner">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold gradient-text-primary mb-2">Join Campus Feed</h1>
-              <p className="text-muted">Create your account with college email</p>
+    <div className="min-h-screen w-full flex bg-[var(--color-bg-deep)] overflow-hidden relative">
+      {/* Background Ambience */}
+      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[var(--color-highlight)]/10 blur-[120px] animate-pulse-slow" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-[var(--color-highlight-alt)]/10 blur-[100px] animate-pulse-slow delay-1000" />
+
+      {/* Left: Visual (Hidden on mobile) - Swapped side for variety or keep consistent? Let's keep consistent with Login: Visual on Right, Form on Left. */}
+      {/* Visual */}
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-[var(--color-surface)] items-center justify-center p-12 order-2">
+         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30 mix-blend-overlay grayscale hover:grayscale-0 transition-all duration-[2s]" />
+         <div className="absolute inset-0 bg-gradient-to-bl from-[var(--color-highlight)]/90 to-[var(--color-highlight-alt)]/90 mix-blend-multiply" />
+         <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-deep)] via-transparent to-transparent" />
+         
+         <div className="relative z-10 max-w-xl text-center text-white space-y-8 animate-in slide-in-from-right-8 fade-in duration-1000">
+            <div className="space-y-4">
+             <h2 className="text-5xl font-extrabold font-outfit leading-tight drop-shadow-lg">
+               Join the<br/>
+               <span className="text-white/80">Movement.</span>
+             </h2>
+             <p className="text-xl text-white/80 font-medium leading-relaxed max-w-md mx-auto drop-shadow-md">
+               Be part of a growing community of innovators, thinkers, and friends.
+             </p>
             </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
-
-              {verifyToken && (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                  <p className="font-semibold mb-2">Signup successful!</p>
-                  <p className="text-sm">Dev token (for testing):</p>
-                  <code className="text-xs bg-white px-2 py-1 rounded block mt-1 break-all">
-                    {verifyToken}
-                  </code>
-                  <Link
-                    href={`/auth/verify?token=${verifyToken}`}
-                    className="text-sm underline mt-2 inline-block"
-                  >
-                    Click to verify →
-                  </Link>
-                </div>
-              )}
-
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-[var(--color-text)] mb-2">
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
-                  required
-                  className="neo-input w-full"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-[var(--color-text)] mb-2">
-                  College Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="student@nitrkl.ac.in"
-                  required
-                  className="neo-input w-full"
-                />
-                <p className="text-xs text-muted mt-2">Must be a @nitrkl.ac.in email</p>
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-[var(--color-text)] mb-2">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  className="neo-input w-full"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="neo-btn w-full bg-[var(--color-highlight)] text-white disabled:opacity-50"
-              >
-                {loading ? 'Creating account...' : 'Sign Up'}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-muted">
-                Already have an account?{' '}
-                <Link href="/auth/login" className="text-[var(--color-highlight)] hover:underline font-semibold">
-                  Sign in
-                </Link>
-              </p>
+            
+            {/* Abstract visual element */}
+            <div className="relative h-64 w-full flex items-center justify-center">
+               <div className="absolute w-40 h-40 bg-white/10 rounded-full blur-2xl animate-pulse" />
+               <div className="relative w-full max-w-sm h-32 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 transform rotate-[-2deg] hover:rotate-0 transition-all duration-500 shadow-xl">
+                  <div className="flex gap-3 mb-3">
+                     <div className="w-8 h-8 rounded-full bg-white/20" />
+                     <div className="flex-1 space-y-2">
+                        <div className="h-2 w-20 bg-white/20 rounded-full" />
+                        <div className="h-2 w-32 bg-white/10 rounded-full" />
+                     </div>
+                  </div>
+                  <div className="h-8 w-full bg-white/5 rounded-lg" />
+               </div>
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm h-32 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 transform translate-y-4 rotate-[2deg] hover:rotate-0 transition-all duration-500 shadow-xl z-[-1]">
+               </div>
             </div>
+         </div>
+      </div>
+
+      {/* Right: Form (Actually Left side in code order 1) */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative z-10 order-1">
+        <div className="max-w-[420px] w-full animate-in slide-in-from-left-8 fade-in duration-700">
+          
+           {/* Logo / Header */}
+           <div className="mb-8 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 mb-6 p-2 pr-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-highlight)] to-[var(--color-highlight-alt)] flex items-center justify-center text-white">
+                  <Sparkles size={16} fill="currentColor" className="text-white/90" />
+                </div>
+                <span className="text-sm font-semibold tracking-wide text-[var(--color-text)]">CampusFeed</span>
+            </div>
+            
+            <h1 className="text-4xl font-extrabold font-outfit text-[var(--color-text)] tracking-tight mb-2">
+              Create Account
+            </h1>
+            <p className="text-lg text-[var(--color-text-muted)]">
+              Use your college email to get started.
+            </p>
           </div>
+
+          {/* Card */}
+          <div className="backdrop-blur-xl bg-[var(--color-surface)]/40 border border-[var(--color-border)] rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/0 dark:from-white/5 dark:to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+            {/* Success State */}
+            {verifyToken ? (
+               <div className="relative z-10 text-center py-8 animate-in zoom-in slide-in-from-bottom-4 fade-in duration-500">
+                 <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500 ring-8 ring-green-500/5">
+                    <CheckCircle2 size={40} strokeWidth={3} />
+                 </div>
+                 <h3 className="text-2xl font-bold text-[var(--color-text)] mb-3">Check your email!</h3>
+                 <p className="text-[var(--color-text-muted)] mb-8">
+                   We've sent a verification link to <span className="font-semibold text-[var(--color-text)]">{email}</span>.
+                 </p>
+                 
+                 {/* Dev Token Section */}
+                 <div className="bg-[var(--color-surface-soft)] p-4 rounded-xl border border-[var(--color-border)] text-left mb-6">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">Dev Token (Testing Only)</p>
+                    <code className="block bg-[var(--color-bg-deep)] p-3 rounded-lg text-xs font-mono break-all text-[var(--color-text)] border border-[var(--color-border)] select-all">
+                      {verifyToken}
+                    </code>
+                 </div>
+
+                 <Link
+                    href={`/auth/verify?token=${verifyToken}`}
+                    className="inline-flex items-center gap-2 text-[var(--color-highlight)] font-bold hover:underline"
+                 >
+                   <span>Verify Instantly</span>
+                   <ArrowRight size={16} />
+                 </Link>
+               </div>
+            ) : (
+                /* Signup Form */
+                <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
+                  {error && (
+                    <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium flex items-center gap-3 animate-in slide-in-from-top-2">
+                      <div className="w-1 h-8 bg-red-500 rounded-full" />
+                      {error}
+                    </div>
+                  )}
+    
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)] ml-1">
+                      Full Name
+                    </label>
+                    <div className="relative group/input">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)] group-focus-within/input:text-[var(--color-highlight)] transition-colors" />
+                      <input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="John Doe"
+                        required
+                        className="w-full pl-12 pr-4 py-3.5 bg-[var(--color-bg-deep)] border-2 border-[var(--color-border)] rounded-2xl focus:border-[var(--color-highlight)] focus:ring-4 focus:ring-[var(--color-highlight)]/10 outline-none transition-all font-medium text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/40"
+                      />
+                    </div>
+                  </div>
+    
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)] ml-1">
+                      College Email
+                    </label>
+                    <div className="relative group/input">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)] group-focus-within/input:text-[var(--color-highlight)] transition-colors" />
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="student@nitrkl.ac.in"
+                        required
+                        className="w-full pl-12 pr-4 py-3.5 bg-[var(--color-bg-deep)] border-2 border-[var(--color-border)] rounded-2xl focus:border-[var(--color-highlight)] focus:ring-4 focus:ring-[var(--color-highlight)]/10 outline-none transition-all font-medium text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/40"
+                      />
+                      {/* Helper text moved or simplified */}
+                    </div>
+                     <p className="text-[10px] text-[var(--color-text-muted)]/80 ml-1">Must be a @nitrkl.ac.in email</p>
+                  </div>
+    
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)] ml-1">
+                      Password
+                    </label>
+                    <div className="relative group/input">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)] group-focus-within/input:text-[var(--color-highlight)] transition-colors" />
+                      <input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        placeholder="••••••••"
+                        className="w-full pl-12 pr-4 py-3.5 bg-[var(--color-bg-deep)] border-2 border-[var(--color-border)] rounded-2xl focus:border-[var(--color-highlight)] focus:ring-4 focus:ring-[var(--color-highlight)]/10 outline-none transition-all font-medium text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/40"
+                      />
+                    </div>
+                  </div>
+    
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                       className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-highlight)] to-[var(--color-highlight-alt)] text-white font-bold text-lg shadow-lg shadow-[var(--color-highlight)]/25 hover:shadow-xl hover:shadow-[var(--color-highlight)]/40 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group/btn"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="animate-spin" size={20} />
+                          <span>Creating...</span>
+                        </>
+                      ) : (
+                        <>
+                           <span>Sign Up</span>
+                           <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+            )}
+           
+          </div>
+
+          <p className="mt-8 text-center text-[var(--color-text-muted)]">
+            Already have an account?{' '}
+            <Link 
+              href="/auth/login" 
+              className="text-[var(--color-highlight)] font-bold hover:underline decoration-2 decoration-[var(--color-highlight)]/30 underline-offset-4"
+            >
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </div>
