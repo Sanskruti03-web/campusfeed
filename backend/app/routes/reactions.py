@@ -119,7 +119,8 @@ def remove_reaction():
     post_id = data.get("post_id")
     comment_id = data.get("comment_id")
     type_ = data.get("type") or "like"
-    r = Reaction.query.filter_by(post_id=post_id, comment_id=comment_id, user_id=current_user.id, type=type_).first()
+    # Find any reaction by this user on this target (since we enforce single reaction)
+    r = Reaction.query.filter_by(post_id=post_id, comment_id=comment_id, user_id=current_user.id).first()
     if not r:
         return jsonify({"error": "Reaction not found"}), 404
     db.session.delete(r)

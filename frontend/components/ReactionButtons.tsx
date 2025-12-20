@@ -62,23 +62,36 @@ export default function ReactionButtons({ postId, commentId, size = 'md' }: Reac
           comment_id: commentId,
           type,
         });
-        setUserReactions(userReactions.filter((r) => r !== type));
+        // Remove from local state
+        setUserReactions([]);
         setReactions((prev) => ({
           ...prev,
           [type]: Math.max(0, (prev[type] || 0) - 1),
         }));
       } else {
-        // Add reaction
+        // Check if there was a previous reaction to decrement
+        const previousReaction = userReactions[0]; // Assuming single reaction
+
+        // Add (or update) reaction
         await reactionsAPI.add({
           post_id: postId,
           comment_id: commentId,
           type,
         });
-        setUserReactions([...userReactions, type]);
-        setReactions((prev) => ({
-          ...prev,
-          [type]: (prev[type] || 0) + 1,
-        }));
+
+        // Update local state: Set ONLY the new type
+        setUserReactions([type]);
+        
+        setReactions((prev) => {
+            const next = { ...prev };
+            // Increment new type
+            next[type] = (next[type] || 0) + 1;
+            // Decrement old type if consistent with backend logic (swapping)
+            if (previousReaction && previousReaction !== type) {
+                next[previousReaction] = Math.max(0, (next[previousReaction] || 0) - 1);
+            }
+            return next;
+        });
       }
     } catch (err: any) {
       console.error('Failed to update reaction:', err);
