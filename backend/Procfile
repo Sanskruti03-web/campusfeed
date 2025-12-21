@@ -1,1 +1,1 @@
-web: gunicorn backend_run:app
+web: gunicorn --worker-class gevent -w 1 --bind 0.0.0.0:$PORT backend_run:app

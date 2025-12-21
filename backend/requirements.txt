@@ -10,6 +10,8 @@ bleach
 itsdangerous
 pillow
 gunicorn
+gevent
+gevent-websocket
 pytest
 pytest-flask
 factory-boy
