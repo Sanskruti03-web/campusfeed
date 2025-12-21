@@ -16,3 +16,4 @@ factory-boy
 coverage
 pymysql
 faker
+psycopg2-binary
