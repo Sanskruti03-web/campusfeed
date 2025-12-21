@@ -2,7 +2,17 @@ import os
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///campusfeed.db").replace("postgres://", "postgresql://")
+    
+    # Robust Database URL handling
+    _db_url = os.getenv("DATABASE_URL")
+    
+    # If DATABASE_URL is set but empty, or not set, use sqlite fallback
+    if not _db_url or not _db_url.strip():
+        SQLALCHEMY_DATABASE_URI = "sqlite:///campusfeed.db"
+    else:
+        # Fix legacy postgres:// usage
+        SQLALCHEMY_DATABASE_URI = _db_url.replace("postgres://", "postgresql://")
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ALLOWED_EMAIL_DOMAINS = os.getenv("ALLOWED_EMAIL_DOMAINS", "nitrkl.ac.in").split(",")
     
