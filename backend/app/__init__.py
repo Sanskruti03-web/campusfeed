@@ -24,20 +24,33 @@ def create_app():
     limiter.init_app(app)
     socketio.init_app(app)
 
-    # CORS configuration for frontend on localhost:3000
-    CORS(
-        app,
-        resources={r"/*": {"origins": [
+    # CORS configuration - reads from ALLOWED_ORIGINS env var
+    import os
+    allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+    
+    # Build origins list
+    if allowed_origins_env == "*":
+        # Allow all origins (use with caution in production)
+        cors_origins = "*"
+    elif allowed_origins_env:
+        # Split comma-separated origins from env var
+        cors_origins = [origin.strip() for origin in allowed_origins_env.split(",")]
+    else:
+        # Default to localhost for development
+        cors_origins = [
             "http://localhost:3000", 
             "http://127.0.0.1:3000",
             "http://localhost:3001",
             "http://127.0.0.1:3001",
-            "http://localhost:3002",
-            "http://127.0.0.1:3002"
-        ]}},
+        ]
+    
+    CORS(
+        app,
+        resources={r"/*": {"origins": cors_origins}},
         supports_credentials=True,
         expose_headers=["Content-Type"],
     )
+
 
     from .routes.auth import auth_bp
     from .routes.posts import posts_bp
