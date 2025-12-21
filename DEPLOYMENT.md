@@ -3,7 +3,7 @@
 This guide will help you host **CampusFeed** for free using the best free-tier providers available.
 
 - **Frontend**: [Vercel](https://vercel.com) (Best for Next.js)
-- **Backend**: [Koyeb](https://koyeb.com) (High performance free tier)
+- **Backend**: [Railway](https://railway.app) (Great developer experience)
 - **Database**: [Neon](https://neon.tech) (Free serverless Postgres)
 
 ---
@@ -19,26 +19,28 @@ Since free hosting platforms have ephemeral file systems (files are wiped on res
 
 ---
 
-## 🚀 2. Deploy Backend (Koyeb)
+## 🚀 2. Deploy Backend (Railway)
 
 1.  Push your code to **GitHub**.
-2.  Go to [Koyeb Dashboard](https://app.koyeb.com).
-3.  Click **Create App** (or Create Service).
-4.  Select **GitHub** as deployment method.
-5.  Select your repository.
-6.  **Configure Service**:
-    - **Builder**: **Buildpack** (Standard Python builder).
-    - **Work Directory**: `backend` (Important! Set this to run from backend folder).
-    - **Build Command**: `pip install -r requirements.txt`
-    - **Run Command**: `gunicorn backend_run:app`
-7.  **Environment Variables** (Add these):
+2.  Go to [Railway Dashboard](https://railway.app).
+3.  Click **New Project** -> **GitHub Repo**.
+4.  Select your repository.
+5.  **Configuration**:
+    - Railway usually auto-detects Python.
+    - Go to **Settings** -> **Root Directory**: Set to `backend`.
+    - Go to **Settings** -> **Build Command**: `pip install -r requirements.txt`
+    - Go to **Settings** -> **Start Command**: `gunicorn backend_run:app` (Or it will auto-read Procfile)
+6.  **Variables** (Add these):
     - `DATABASE_URL`: Paste your Neon connection string.
       - _Note_: Change `postgres://` to `postgresql://` if needed for SQLAlchemy.
     - `SECRET_KEY`: Generate a random string.
     - `FLASK_ENV`: `production`
-    - `ALLOWED_ORIGINS`: `https://your-frontend.vercel.app` (You will set this after deploying frontend, initially use `*`).
-8.  Click **Deploy**.
-9.  Wait for it to deploy. Copy your **Public URL** (e.g., `https://campusfeed-yourname.koyeb.app`).
+    - `ALLOWED_ORIGINS`: `https://your-frontend.vercel.app` (You will set this after deploying frontend, initially use `*`)
+    - `PORT`: `5000` (Optional, Railway usually handles this, but gunicorn defaults to 8000. Start command might need bind address or PORT env)
+      - _Better Start Command_: `gunicorn backend_run:app -b 0.0.0.0:$PORT`
+7.  Click **Deploy** (if not auto-started).
+8.  Go to **Settings** -> **Domains** -> **Generate Domain**.
+9.  Copy your **Public URL** (e.g., `https://campusfeed-production.up.railway.app`).
 
 ---
 
@@ -51,8 +53,8 @@ Since free hosting platforms have ephemeral file systems (files are wiped on res
     - **Root Directory**: Click "Edit" and select `frontend`.
     - **Framework Preset**: Next.js
 5.  **Environment Variables**:
-    - `NEXT_PUBLIC_API_URL`: Paste your **Koyeb Backend URL** (no trailing slash).
-      - Example: `https://campusfeed-yourname.koyeb.app`
+    - `NEXT_PUBLIC_API_URL`: Paste your **Railway Backend URL** (no trailing slash).
+      - Example: `https://campusfeed-production.up.railway.app`
 6.  Click **Deploy**.
 
 ---
@@ -61,12 +63,12 @@ Since free hosting platforms have ephemeral file systems (files are wiped on res
 
 1.  **Frontend URL**: Copy your new Vercel URL (e.g., `https://campusfeed.vercel.app`).
 2.  **Update Backend**:
-    - Go back to Koyeb Dashboard -> Settings -> Environment Variables.
+    - Go back to Railway Dashboard -> Variables.
     - Update `ALLOWED_ORIGINS` to your Vercel URL to secure CORS.
-    - Redeploy if needed (Koyeb usually auto-redeploys on env change).
+    - Railway auto-redeploys on variable change.
 
 ## ✅ Verification
 
 - Visit your Vercel URL.
-- Try `Sign Up` -> The backend (Koyeb) should create a user in Neon DB.
-- **Benefits of Koyeb**: Unlike Render, Koyeb's free tier has faster cold starts and better global performance.
+- Try `Sign Up` -> The backend (Railway) should create a user in Neon DB.
+- **Note**: Railway has a trial period for free hobby tier, but it's very robust.
