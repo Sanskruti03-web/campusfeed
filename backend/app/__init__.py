@@ -23,6 +23,12 @@ def create_app():
     login_manager.init_app(app)
     limiter.init_app(app)
     socketio.init_app(app)
+    
+    # Import models and create tables if they don't exist
+    with app.app_context():
+        from .models import user, post, comment, reaction, notification, message
+        db.create_all()
+        print("[STARTUP] Database tables created/verified")
 
     # CORS configuration - reads from ALLOWED_ORIGINS env var
     import os
