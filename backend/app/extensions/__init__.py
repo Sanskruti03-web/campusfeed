@@ -23,5 +23,5 @@ else:
         "http://127.0.0.1:3001",
     ]
 
-socketio = SocketIO(cors_allowed_origins=_socketio_origins, async_mode="gevent", manage_session=False)
+socketio = SocketIO(cors_allowed_origins=_socketio_origins, manage_session=False)
 
